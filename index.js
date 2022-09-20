@@ -35,7 +35,15 @@ app.get(['/', '/health'], function (req, res) {
 
 app.listen(port, async function () {
     let metabaseSessionId=await metaabseCollection.getSessionId()
-     await metaabseCollection.getCollection(metabaseSessionId)
+    let questionId= await metaabseCollection.getquestionId(metabaseSessionId)
+     let data=await  metaabseCollection.getdata(metabaseSessionId,questionId)
+     console.log(data)
+    //  let fileWrite=await metaabseCollection.wtiteCsvFile(collection)
+    //  console.log(fileWrite)
+    //  let maxCreatedAt=await metaabseCollection.maxCreatedAt(collection)
+    //  let minCreated=await metaabseCollection.minCreatedAt(collection)
+    //  console.log(maxCreatedAt)
+    //  console.log(minCreated)
 
 
    
