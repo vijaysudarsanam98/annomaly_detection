@@ -1,6 +1,7 @@
 
 const fetch = require('node-fetch');
 var fs = require('file-system');
+const config=require('./config')
 
 
 
@@ -22,7 +23,7 @@ module.exports.getSessionId = async function () {
 
   module.exports.getquestionId=async function(sessionId){
 
-    const uri=`https://analytics.tryinteract.io/api/collection/46/items`
+    const uri=`https://analytics.tryinteract.io/api/collection/${config.config.collectionId}/items`
 
     const requestHeaders = {
       'X-Metabase-Session': sessionId,
@@ -44,9 +45,9 @@ module.exports.getSessionId = async function () {
     return questionId
    }
 
-  module.exports.getdata=async function(sessionId){
+  module.exports.getdata=async function(sessionId,questionId){
 
-    const uri=`https://analytics.tryinteract.io/api/card/358/query/csv`
+    const uri=`https://analytics.tryinteract.io/api/card/${questionId}/query/csv`
 
     const requestHeaders = {
         'X-Metabase-Session': sessionId,

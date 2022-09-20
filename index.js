@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const { json } = require('body-parser');
 const metaabseCollection=require('./metabase')
-
+const service=require('./annomalydetection')
 
 
 //initialize sentry logging
@@ -37,8 +37,10 @@ app.listen(port, async function () {
     let metabaseSessionId=await metaabseCollection.getSessionId()
     let questionId= await metaabseCollection.getquestionId(metabaseSessionId)
      let data=await  metaabseCollection.getdata(metabaseSessionId,questionId)
-     console.log(data)
-    //  let fileWrite=await metaabseCollection.wtiteCsvFile(collection)
+     let fileWrite=await metaabseCollection.wtiteCsvFile(collection)
+
+     let  annomaly=await service.annomalydetection(data)
+     console.log(annomaly)
     //  console.log(fileWrite)
     //  let maxCreatedAt=await metaabseCollection.maxCreatedAt(collection)
     //  let minCreated=await metaabseCollection.minCreatedAt(collection)
