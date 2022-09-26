@@ -5,6 +5,8 @@ const config=require('./config')
 
 
 
+
+
 module.exports.getSessionId = async function () {
     
     let payload = {
@@ -64,7 +66,7 @@ module.exports.getSessionId = async function () {
 
   module.exports.wtiteCsvFile=async function(collection){
 
-    fs.writeFileSync("demoA.csv", collection);
+    fs.writeFileSync("800.csv", collection);
   }
 
   module.exports.maxCreatedAt=async function(collection){

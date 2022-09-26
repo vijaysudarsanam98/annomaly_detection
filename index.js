@@ -34,13 +34,13 @@ app.get(['/', '/health'], function (req, res) {
 
 
 app.listen(port, async function () {
+  
     let metabaseSessionId=await metaabseCollection.getSessionId()
     let questionId= await metaabseCollection.getquestionId(metabaseSessionId)
      let data=await  metaabseCollection.getdata(metabaseSessionId,questionId)
-     let fileWrite=await metaabseCollection.wtiteCsvFile(collection)
+     //let fileWrite=await metaabseCollection.wtiteCsvFile(data)
 
      let  annomaly=await service.annomalydetection(data)
-     console.log(annomaly)
     //  console.log(fileWrite)
     //  let maxCreatedAt=await metaabseCollection.maxCreatedAt(collection)
     //  let minCreated=await metaabseCollection.minCreatedAt(collection)

@@ -17,18 +17,21 @@ module.exports.annomalydetection=async function(csv){
         let zipper = new zip();
         fsExtra.emptyDirSync('tryinteract');
         let dataSourceZipFileName = `tryinteract/46_${new Date().getMilliseconds()}.zip`;
+        console.log(csv)
 
-        fs.writeFile(`tryinteract/series_360.csv`, csv, function (err) {
+        fs.writeFile(`tryinteract/series_410.csv`, csv, function (err) {
             if (err) {
-                console.log(err)
+               console.log(err)
                 return err;
             }
         });
-
+               
+        await sleep(5000)
 
 
         zipper.addLocalFolder('tryinteract');
         zipper.writeZip(dataSourceZipFileName);
+        console.log(dataSourceZipFileName)
 
         const azureDataSourceUrl = await module.exports.uploadToAzureStorage(dataSourceZipFileName);
         console.log(azureDataSourceUrl)
@@ -39,14 +42,22 @@ module.exports.annomalydetection=async function(csv){
 
         const modelRequest = {
             source: azureDataSourceUrl,
-            startTime: new Date(minAndMaxCreatedAt.min),
-            endTime: new Date(minAndMaxCreatedAt.max),
+            startTime: '2022-06-24T00:00:00Z',
+            endTime: '2022/9/26T00:00:00Z',
             slidingWindow: 150,
             alignMode: 'Inner'
         };
 
+        await sleep(5000)
+
         const trainResponse = await anomalyDetectorClient.trainMultivariateModel(modelRequest);
-                modelId = trainResponse.location.split('/').pop();
+        console.log("msg"+trainResponse)
+                modelId = trainResponse.location.split('/').pop(); 
+
+                let modelResponse = await anomalyDetectorClient.getMultivariateModel(modelId);
+                let modelStatus = modelResponse.modelInfo.status;
+
+                console.log(modelStatus)
     }
 
     catch(err){
@@ -76,4 +87,8 @@ module.exports.uploadToAzureStorage = function (fileName) {
         });
         azureReadStream.pipe(azureWriteStream);
     });
+}
+
+function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
 }
