@@ -19,7 +19,7 @@ module.exports.annomalydetection=async function(csv){
         let dataSourceZipFileName = `tryinteract/46_${new Date().getMilliseconds()}.zip`;
         console.log(csv)
 
-        fs.writeFile(`tryinteract/series_410.csv`, csv, function (err) {
+        fs.writeFile(`tryinteract/series_440.csv`, csv, function (err) {
             if (err) {
                console.log(err)
                 return err;
@@ -42,8 +42,8 @@ module.exports.annomalydetection=async function(csv){
 
         const modelRequest = {
             source: azureDataSourceUrl,
-            startTime: '2022-06-24T00:00:00Z',
-            endTime: '2022/9/26T00:00:00Z',
+            startTime: '2022-07-01T00:00:00Z',
+            endTime: '2022-09-29T00:00:00Z',
             slidingWindow: 150,
             alignMode: 'Inner'
         };
@@ -51,17 +51,36 @@ module.exports.annomalydetection=async function(csv){
         await sleep(5000)
 
         const trainResponse = await anomalyDetectorClient.trainMultivariateModel(modelRequest);
-        console.log("msg"+trainResponse)
-                modelId = trainResponse.location.split('/').pop(); 
+        console.log(trainResponse)
+
+        await sleep(5000)
+              let  modelId = trainResponse.location.split('/').pop(); 
+                console.log(modelId) 
+
+                await sleep(5000)
+
 
                 let modelResponse = await anomalyDetectorClient.getMultivariateModel(modelId);
+                console.log(modelResponse)
                 let modelStatus = modelResponse.modelInfo.status;
 
-                console.log(modelStatus)
+                 console.log(modelStatus)
+
+                 await sleep(5000)
+
+
+                 const detectRequest = {
+                    source: azureDataSourceUrl,
+                    startTime: '2022-06-24T00:00:00Z',
+                    endTime: '2022-09-26T00:00:00Z'
+                }
+
+                const resultHeader = await anomalyDetectorClient.detectAnomaly(modelId, detectRequest)
+                console.log(resultHeader)
     }
 
     catch(err){
-
+   console.log(err)
         
     }
 }
