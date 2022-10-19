@@ -1,8 +1,9 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+
 const express = require('express');
 const port = process.env.PORT || 3000
 const fetch = require('node-fetch');
-
-
 const bodyParser = require('body-parser');
 const app = express();
 const { json } = require('body-parser');
@@ -42,6 +43,7 @@ app.listen(port, async function () {
 
 
 
+  // eslint-disable-next-line no-undef
   console.log(`annomaly detection  is up: ${process.env.NODE_ENV}`);
 
 

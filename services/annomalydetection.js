@@ -1,4 +1,4 @@
-
+/* eslint-disable no-undef */
 const config = require('../config')
 const { AnomalyDetectorClient, KnownTimeGranularity } = require('@azure/ai-anomaly-detector');
 const { AzureKeyCredential } = require('@azure/core-auth');
