@@ -25,5 +25,8 @@
     "fs-extra": "^10.1.0",
     "node-fetch": "^2.6.1",
     "pkgcloud": "^2.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.25.0"
   }
 }
