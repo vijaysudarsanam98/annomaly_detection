@@ -1,8 +1,6 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
+
 
 const fetch = require('node-fetch');
-var fs = require('file-system');
 const config = require('./config')
 
 

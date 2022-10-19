@@ -1,12 +1,10 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
+
+
 
 const express = require('express');
 const port = process.env.PORT || 3000
-const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
 const app = express();
-const { json } = require('body-parser');
 const metabseCollection = require('./metabase')
 const annomalyDetectionService = require('./services/annomalydetection')
 
