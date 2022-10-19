@@ -1,6 +1,6 @@
 const { AnomalyDetectorClient } = require('@azure/ai-anomaly-detector');
 const { AzureKeyCredential } = require('@azure/core-auth');
-const config = require('./config')
+const config = require('../config')
 const pkgcloud = require('pkgcloud')
 const fs = require('fs');
 const zip = require('adm-zip');
