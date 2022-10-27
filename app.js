@@ -36,8 +36,10 @@ app.listen(port, async function () {
 
   let metabaseSessionId = await metabseCollection.getSessionId()
   let questionId = await metabseCollection.getQuestionId(metabaseSessionId)
-  let collections = await metabseCollection.getCollections(metabaseSessionId, questionId)
-  await annomalyDetectionService.detectAnomalies(collections)
+  console.log(questionId)
+   let collections = await metabseCollection.getCollections(metabaseSessionId, questionId)
+ //  console.log(collections)
+  // await annomalyDetectionService.detectAnomalies(collections)
 
 
 

@@ -9,6 +9,8 @@ let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiv
 
 module.exports.detectAnomalies = async function (data) {
     try {
+         console.log(data)
+         
 
         var azureAnomaliesRequest = {
             series: data,
@@ -17,9 +19,20 @@ module.exports.detectAnomalies = async function (data) {
         };
 
         let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
-        // console.log(detectAnomaliesResult)
+       //  console.log(detectAnomaliesResult)
         let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint)
-        console.log(isAnomalyDetected)
+        let annomaliDetectedValue =[]
+        if (isAnomalyDetected) {
+            detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
+                if (changePoint === true) {
+                    console.log('Anomaly Detected');
+                    console.log(index)
+                    annomaliDetectedValue = await data[index]
+                   console.log(annomaliDetectedValue)
+                    
+                }
+            });
+        }
 
 
 
