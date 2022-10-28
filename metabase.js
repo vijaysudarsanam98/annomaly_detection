@@ -2,6 +2,10 @@
 
 const fetch = require('node-fetch');
 const config = require('./config')
+const { AnomalyDetectorClient, KnownTimeGranularity } = require('@azure/ai-anomaly-detector');
+const { AzureKeyCredential } = require('@azure/core-auth');
+let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiveServiceEndPoint, new AzureKeyCredential(config.config.azureCognitiveServiceApiKey));
+
 
 
 
@@ -37,30 +41,72 @@ module.exports.getQuestionId = async function (sessionId) {
   });
 
   const collectionArray = await res.json()
-  let questionId
+  let questionId = []
 
   for (const member of collectionArray.data) {
-    questionId = member.id
+    questionId.push(member.id)
   }
 
 
   return questionId
 }
 
-module.exports.getCollections = async function (sessionId, questionId) {
+module.exports.collectAnnomalies = async function (sessionId, questionId) {
 
-  const uri = `https://analytics.tryinteract.io/api/card/${questionId}/query/json`
+  try {
 
-  const requestHeaders = {
-    'X-Metabase-Session': sessionId,
-    'Content-Type': 'application/json'
+    let annomaliDetectedValue = []
+
+
+
+
+    for (const questions of questionId) {
+      const uri = `https://analytics.tryinteract.io/api/card/${questions}/query/json`
+
+      const requestHeaders = {
+        'X-Metabase-Session': sessionId,
+        'Content-Type': 'application/json'
+      }
+      const res = await fetch(uri, {
+        method: 'POST',
+        headers: requestHeaders
+      });
+      const data = await res.json()
+      data.pop()
+      var azureAnomaliesRequest = {
+        series: data,
+        granularity: KnownTimeGranularity.daily
+      };
+
+
+      let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
+      let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
+      if (isAnomalyDetected) {
+        detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
+          if (changePoint === true) {
+            annomaliDetectedValue.push(data[index])
+
+
+          }
+        });
+      }
+
+
+
+    }
+
+    let lastTwoValues = annomaliDetectedValue.slice(-2)
+    console.log(lastTwoValues)
+
+    return lastTwoValues
+
   }
-  const res = await fetch(uri, {
-    method: 'POST',
-    headers: requestHeaders
-  });
-  const data = await res.json()
-  return data
+  catch (err) {
+
+    console.log(err)
+
+  }
+
 
 }
 

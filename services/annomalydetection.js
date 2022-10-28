@@ -7,34 +7,35 @@ let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiv
 
 
 
-module.exports.detectAnomalies = async function (data) {
+module.exports.detect = async function (data) {
     try {
-         console.log(data)
          
 
         var azureAnomaliesRequest = {
             series: data,
-            granularity: KnownTimeGranularity.perMinute,
-            maxAnomalyRatio: 0.1
-        };
+            granularity: KnownTimeGranularity.daily
+        }; 
+
+       let  annomaliDetectedValue=[]
 
         let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
-       //  console.log(detectAnomaliesResult)
-        let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint)
-        let annomaliDetectedValue =[]
+        let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
         if (isAnomalyDetected) {
             detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
                 if (changePoint === true) {
-                    console.log('Anomaly Detected');
-                    console.log(index)
-                    annomaliDetectedValue = await data[index]
-                   console.log(annomaliDetectedValue)
-                    
+                    // console.log('Anomaly Detected');
+                    // console.log(changePoint)
+                    // console.log(index)
+                    annomaliDetectedValue.push(data[index])
+
                 }
             });
-        }
+        } 
 
+       let lastTwoValues= annomaliDetectedValue.slice(-2) 
 
+       return lastTwoValues
+            
 
 
     }

@@ -6,7 +6,6 @@ const port = process.env.PORT || 3000
 const bodyParser = require('body-parser');
 const app = express();
 const metabseCollection = require('./metabase')
-const annomalyDetectionService = require('./services/annomalydetection')
 
 
 //initialize sentry logging
@@ -36,14 +35,11 @@ app.listen(port, async function () {
 
   let metabaseSessionId = await metabseCollection.getSessionId()
   let questionId = await metabseCollection.getQuestionId(metabaseSessionId)
-  console.log(questionId)
-   let collections = await metabseCollection.getCollections(metabaseSessionId, questionId)
- //  console.log(collections)
-  // await annomalyDetectionService.detectAnomalies(collections)
+  let collection = await metabseCollection.collectAnnomalies(metabaseSessionId, questionId)
 
 
 
-  // eslint-disable-next-line no-undef
+
   console.log(`annomaly detection  is up: ${process.env.NODE_ENV}`);
 
 
