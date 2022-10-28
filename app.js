@@ -35,6 +35,7 @@ app.listen(port, async function () {
 
   let metabaseSessionId = await metabseCollection.getSessionId()
   let questionId = await metabseCollection.getQuestionId(metabaseSessionId)
+  // eslint-disable-next-line no-unused-vars
   let collection = await metabseCollection.collectAnnomalies(metabaseSessionId, questionId)
 
 
