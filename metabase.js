@@ -62,6 +62,11 @@ module.exports.collectAnnomalies = async function (sessionId, questionId) {
 
     for (const questions of questionId) {
       const uri = `https://analytics.tryinteract.io/api/card/${questions}/query/json`
+     // console.log(questions) 
+
+     
+
+     
 
       const requestHeaders = {
         'X-Metabase-Session': sessionId,
@@ -72,31 +77,34 @@ module.exports.collectAnnomalies = async function (sessionId, questionId) {
         headers: requestHeaders
       });
       const data = await res.json()
-      data.pop()
       var azureAnomaliesRequest = {
         series: data,
         granularity: KnownTimeGranularity.daily
       };
-
+           
 
       let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
+     // console.log(detectAnomaliesResult)
       let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
+  //  console.log(isAnomalyDetected)
       if (isAnomalyDetected) {
         detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
           if (changePoint === true) {
-            annomaliDetectedValue.push(data[index])
+            annomaliDetectedValue.push(data[index],questions)
 
 
           }
         });
       }
+         console.log(annomaliDetectedValue)
+             
 
+    } 
 
+    
 
-    }
-
-    let lastTwoValues = annomaliDetectedValue.slice(-2)
-    console.log(lastTwoValues)
+    let lastTwoValues = annomaliDetectedValue.slice(-4)
+   // console.log(lastTwoValues)
 
     return lastTwoValues
 
@@ -110,3 +118,40 @@ module.exports.collectAnnomalies = async function (sessionId, questionId) {
 
 }
 
+module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
+  console.log(detectedAnnomalies)
+  const uri = `https://hooks.slack.com/services/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`
+  
+    const requestHeaders = {
+      'Content-Type': 'application/json'
+    }
+    const res = await fetch(uri, {
+      method: 'POST',
+      body: detectedAnnomalies,
+      headers: requestHeaders
+    });
+    const data = await res.json();
+    console.log(data)
+    
+  
+  
+} 
+
+
+// module.exports.getQuestionId = async function (detectedAnnomalies) {
+//   console.log(detectedAnnomalies)
+//   const uri = `https://analytics.tryinteract.io/api/card/${questions}/query/json`  
+//     const requestHeaders = {
+//       'Content-Type': 'application/json'
+//     }
+//     const res = await fetch(uri, {
+//       method: 'POST',
+//       body: detectedAnnomalies,
+//       headers: requestHeaders
+//     });
+//     const data = await res.json();
+//     console.log(data)
+    
+  
+  
+// }
