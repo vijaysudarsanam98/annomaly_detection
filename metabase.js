@@ -89,19 +89,71 @@ module.exports.collectAnnomalies = async function (sessionId, questionId) {
   //  console.log(isAnomalyDetected)
       if (isAnomalyDetected) {
         detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
+        //data.push({questionsId:questions})
+        //  console.log(data)
           if (changePoint === true) {
-            annomaliDetectedValue.push(data[index],questions)
+
+           
+          //  console.log(data) 
+
+      //   let z=Object.assign(data.questions) 
+
+      
+
+            annomaliDetectedValue.push(data[index],questions) 
 
 
           }
         });
       }
-         console.log(annomaliDetectedValue)
+
+
+        
+
              
 
-    } 
+    }  
 
     
+
+    // eslint-disable-next-line no-inner-declarations
+    function getAllIndexes(arr, val) {
+      var indexes = [], i = -1;
+      while ((i = arr.indexOf(val, i+1)) != -1){
+          indexes.push(i);
+      }
+      return indexes;
+  }
+  
+  var indexes = getAllIndexes(annomaliDetectedValue, 363)
+
+  //console.log(indexes)  
+
+  let questionAnswers=[]
+
+  for (const questionids of indexes){
+
+    console.log(questionids) 
+
+    let getAnswers=annomaliDetectedValue[questionids-1] 
+
+    questionAnswers.push(getAnswers)
+
+     
+
+
+  }  
+
+  console.log(questionAnswers)
+    
+   //console.log(annomaliDetectedValue)
+  
+    
+     
+
+//   const greaterThanTen = annomaliDetectedValue.filter(element => element == 363);
+
+// console.log(greaterThanTen) 
 
     let lastTwoValues = annomaliDetectedValue.slice(-4)
    // console.log(lastTwoValues)
@@ -109,14 +161,17 @@ module.exports.collectAnnomalies = async function (sessionId, questionId) {
     return lastTwoValues
 
   }
+
+  
   catch (err) {
 
     console.log(err)
 
   }
-
-
 }
+
+
+
 
 module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
   console.log(detectedAnnomalies)
@@ -136,22 +191,3 @@ module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
   
   
 } 
-
-
-// module.exports.getQuestionId = async function (detectedAnnomalies) {
-//   console.log(detectedAnnomalies)
-//   const uri = `https://analytics.tryinteract.io/api/card/${questions}/query/json`  
-//     const requestHeaders = {
-//       'Content-Type': 'application/json'
-//     }
-//     const res = await fetch(uri, {
-//       method: 'POST',
-//       body: detectedAnnomalies,
-//       headers: requestHeaders
-//     });
-//     const data = await res.json();
-//     console.log(data)
-    
-  
-  
-// }
