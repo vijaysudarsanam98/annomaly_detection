@@ -34,9 +34,9 @@ app.get(['/', '/health'], function (req, res) {
 app.listen(port, async function () {
 
   let metabaseSessionId = await metabseCollection.getSessionId()
-  let questionId = await metabseCollection.getQuestionId(metabaseSessionId)
+  let questionIds = await metabseCollection.getQuestionIds(metabaseSessionId)
   // eslint-disable-next-line no-unused-vars
-  let collection = await metabseCollection.collectAnnomalies(metabaseSessionId, questionId) 
+  let collection = await metabseCollection.collectAnnomalies(metabaseSessionId, questionIds) 
  // await metabseCollection.sendAnnomaliesToSlack(collection)
 
 

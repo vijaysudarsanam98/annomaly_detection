@@ -27,7 +27,7 @@ module.exports.getSessionId = async function () {
 
 }
 
-module.exports.getQuestionId = async function (sessionId) {
+module.exports.getQuestionIds = async function (sessionId) {
 
   const uri = `https://analytics.tryinteract.io/api/collection/${config.config.collectionId}/items`
 
@@ -51,22 +51,22 @@ module.exports.getQuestionId = async function (sessionId) {
   return questionId
 }
 
-module.exports.collectAnnomalies = async function (sessionId, questionId) {
+module.exports.collectAnnomalies = async function (sessionId, questionIds) {
 
   try {
 
-    let annomaliDetectedValue = []
+    let annomaliDetectedValues = []
+    let currentQuestionId
+
+
+
+    for (const questionId of questionIds) {
+      const uri = `https://analytics.tryinteract.io/api/card/${questionId}/query/json`
+      // console.log(questions) 
 
 
 
 
-    for (const questions of questionId) {
-      const uri = `https://analytics.tryinteract.io/api/card/${questions}/query/json`
-     // console.log(questions) 
-
-     
-
-     
 
       const requestHeaders = {
         'X-Metabase-Session': sessionId,
@@ -81,88 +81,38 @@ module.exports.collectAnnomalies = async function (sessionId, questionId) {
         series: data,
         granularity: KnownTimeGranularity.daily
       };
-           
+
 
       let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
-     // console.log(detectAnomaliesResult)
+      // console.log(detectAnomaliesResult)
       let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
-  //  console.log(isAnomalyDetected)
+      //  console.log(isAnomalyDetected)
       if (isAnomalyDetected) {
         detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
-        //data.push({questionsId:questions})
-        //  console.log(data)
+          //data.push({questionsId:questions})
+          //  console.log(data)
           if (changePoint === true) {
-
-           
-          //  console.log(data) 
-
-      //   let z=Object.assign(data.questions) 
-
-      
-
-            annomaliDetectedValue.push(data[index],questions) 
-
-
+            annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index] })
           }
         });
       }
 
 
-        
-
-             
-
-    }  
-
-    
-
-    // eslint-disable-next-line no-inner-declarations
-    function getAllIndexes(arr, val) {
-      var indexes = [], i = -1;
-      while ((i = arr.indexOf(val, i+1)) != -1){
-          indexes.push(i);
-      }
-      return indexes;
-  }
-  
-  var indexes = getAllIndexes(annomaliDetectedValue, 363)
-
-  //console.log(indexes)  
-
-  let questionAnswers=[]
-
-  for (const questionids of indexes){
-
-    console.log(questionids) 
-
-    let getAnswers=annomaliDetectedValue[questionids-1] 
-
-    questionAnswers.push(getAnswers)
-
-     
 
 
-  }  
 
-  console.log(questionAnswers)
-    
-   //console.log(annomaliDetectedValue)
-  
-    
-     
 
-//   const greaterThanTen = annomaliDetectedValue.filter(element => element == 363);
+    }
 
-// console.log(greaterThanTen) 
+    console.log(annomaliDetectedValues)
 
-    let lastTwoValues = annomaliDetectedValue.slice(-4)
-   // console.log(lastTwoValues)
 
-    return lastTwoValues
+
+
 
   }
 
-  
+
   catch (err) {
 
     console.log(err)
@@ -176,18 +126,18 @@ module.exports.collectAnnomalies = async function (sessionId, questionId) {
 module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
   console.log(detectedAnnomalies)
   const uri = `https://hooks.slack.com/services/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`
-  
-    const requestHeaders = {
-      'Content-Type': 'application/json'
-    }
-    const res = await fetch(uri, {
-      method: 'POST',
-      body: detectedAnnomalies,
-      headers: requestHeaders
-    });
-    const data = await res.json();
-    console.log(data)
-    
-  
-  
+
+  const requestHeaders = {
+    'Content-Type': 'application/json'
+  }
+  const res = await fetch(uri, {
+    method: 'POST',
+    body: detectedAnnomalies,
+    headers: requestHeaders
+  });
+  const data = await res.json();
+  console.log(data)
+
+
+
 } 
