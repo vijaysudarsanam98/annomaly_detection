@@ -1,3 +1,4 @@
+/* eslint-disable no-inner-declarations */
 
 
 const fetch = require('node-fetch');
@@ -56,7 +57,9 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
   try {
 
     let annomaliDetectedValues = []
-    let currentQuestionId
+    let currentQuestionId 
+    let getLastTwoValues=[]
+    
 
 
 
@@ -93,18 +96,43 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
           //  console.log(data)
           if (changePoint === true) {
             annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index] })
+
           }
         });
-      }
+      } 
+
+      var filteredArray = annomaliDetectedValues.filter(function( obj ) {
+        return obj.currentQuestionId === questionId
+    })
+  
+   // console.log(filteredArray)
+  
+    let lastTwoValues= filteredArray.slice(-2) 
+
+    console.log(lastTwoValues)
+     
+
+                     
+
+
+
+    }   
+
+
+      
+  
+
+    
+
+    
+
+
+      //console.log(annomaliDetectedValues) 
 
 
 
 
 
-
-    }
-
-    console.log(annomaliDetectedValues)
 
 
 
