@@ -59,6 +59,7 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
   try {
 
     let annomaliDetectedValues = []
+    // eslint-disable-next-line no-unused-vars
     let currentQuestionId
 
 
