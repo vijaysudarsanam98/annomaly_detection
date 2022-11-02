@@ -5,7 +5,8 @@ const fetch = require('node-fetch');
 const config = require('./config')
 const { AnomalyDetectorClient, KnownTimeGranularity } = require('@azure/ai-anomaly-detector');
 const { AzureKeyCredential } = require('@azure/core-auth');
-const { json } = require('express');
+const axios = require('axios').default;
+
 let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiveServiceEndPoint, new AzureKeyCredential(config.config.azureCognitiveServiceApiKey));
 
 
@@ -58,9 +59,8 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
   try {
 
     let annomaliDetectedValues = []
-    let currentQuestionId 
-    let getLastTwoValues=[]
-    
+    let currentQuestionId
+
 
 
 
@@ -88,76 +88,42 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
 
 
       let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
-      // console.log(detectAnomaliesResult)
       let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
-      //  console.log(isAnomalyDetected)
       if (isAnomalyDetected) {
         detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
-          //data.push({questionsId:questions})
-          //  console.log(data)
+
           if (changePoint === true) {
             annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index] })
 
           }
         });
-      } 
+      }
 
-      var filteredArray = annomaliDetectedValues.filter(function( obj ) {
+      var filteredArray = annomaliDetectedValues.filter(function (obj) {
         return obj.currentQuestionId === questionId
-    })
-  
-   // console.log(filteredArray)
-  
-    let lastTwoValues= filteredArray.slice(-2) 
+      })
 
-    for (let values of lastTwoValues){
 
-     // console.log(values)
-      let questionId=values.currentQuestionId
-      let timeStamp=values.index.timestamp
-      let detectedValues = values.index.value 
+      let lastTwoValues = filteredArray.slice(-2)
 
-      // console.log(questionId)
-      // console.log(timeStamp)
-      // console.log(detectedValues)
-  
+      for (let values of lastTwoValues) {
 
-      let sendToSlack=({text:questionId})
+        let questionId = values.currentQuestionId
+        let timeStamp = values.index.timestamp
+        let detectedValues = values.index.value
 
-      console.log(sendToSlack)
 
-      await this.sendAnnomaliesToSlack(sendToSlack)
+
+
+        let sendToSlack = ({ text: questionId, timeStamp, detectedValues })
+
+        console.log(sendToSlack)
+
+        await this.sendAnnomaliesToSlack(sendToSlack)
+
+      }
 
     }
-
-
-     
-
-                     
-
-
-
-    }   
-
-
-      
-  
-
-    
-
-    
-
-
-      //console.log(annomaliDetectedValues) 
-
-
-
-
-
-
-
-
-
 
   }
 
@@ -173,20 +139,32 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
 
 
 module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
- // console.log(detectedAnnomalies)
-  const uri = `https://hooks.slack.com/services/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`
 
-  const requestHeaders = {
-    'Content-Type': 'application/json'
+  try {
+
+
+    const uri = `https://hooks.slack.com/services/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`
+
+    const requestHeaders = {
+      'Content-Type': 'application/json'
+    }
+    const res = await axios(uri, {
+      method: 'POST',
+      text: detectedAnnomalies,
+      headers: requestHeaders
+    });
+    const data = await res.json();
+    console.log(data)
   }
-  const res = await fetch(uri, {
-    method: 'POST',
-    text: "hello",
-    headers: requestHeaders
-  });
-  const data = await res.json();
-  console.log(data)
 
 
 
-} 
+
+  catch (err) {
+
+    console.log(err)
+  }
+
+}
+
+
