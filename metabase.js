@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const config = require('./config')
 const { AnomalyDetectorClient, KnownTimeGranularity } = require('@azure/ai-anomaly-detector');
 const { AzureKeyCredential } = require('@azure/core-auth');
+const { json } = require('express');
 let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiveServiceEndPoint, new AzureKeyCredential(config.config.azureCognitiveServiceApiKey));
 
 
@@ -109,7 +110,27 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
   
     let lastTwoValues= filteredArray.slice(-2) 
 
-    console.log(lastTwoValues)
+    for (let values of lastTwoValues){
+
+     // console.log(values)
+      let questionId=values.currentQuestionId
+      let timeStamp=values.index.timestamp
+      let detectedValues = values.index.value 
+
+      // console.log(questionId)
+      // console.log(timeStamp)
+      // console.log(detectedValues)
+  
+
+      let sendToSlack=({text:questionId})
+
+      console.log(sendToSlack)
+
+      await this.sendAnnomaliesToSlack(sendToSlack)
+
+    }
+
+
      
 
                      
@@ -152,7 +173,7 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
 
 
 module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
-  console.log(detectedAnnomalies)
+ // console.log(detectedAnnomalies)
   const uri = `https://hooks.slack.com/services/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`
 
   const requestHeaders = {
@@ -160,7 +181,7 @@ module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
   }
   const res = await fetch(uri, {
     method: 'POST',
-    body: detectedAnnomalies,
+    text: "hello",
     headers: requestHeaders
   });
   const data = await res.json();
