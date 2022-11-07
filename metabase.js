@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const config = require('./config')
 const { AnomalyDetectorClient, KnownTimeGranularity } = require('@azure/ai-anomaly-detector');
 const { AzureKeyCredential } = require('@azure/core-auth');
+const { json } = require('express');
 const axios = require('axios').default;
 
 let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiveServiceEndPoint, new AzureKeyCredential(config.config.azureCognitiveServiceApiKey));
@@ -108,19 +109,28 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
       let lastTwoValues = filteredArray.slice(-2)
 
       for (let values of lastTwoValues) {
-
+        
+       
         let questionId = values.currentQuestionId
         let timeStamp = values.index.timestamp
         let detectedValues = values.index.value
+           
+       
+        
+
+
+             
+   let  payload=  {
+
+    "channel": "#tryinteract", 
+    "username": "webhookbot", 
+    "text":     ` Annomaly detected on questionId ${ questionId}\n , by  :${timeStamp}\n we had ${detectedValues}`
+
+    }
 
 
 
-
-        let sendToSlack = ({ text: questionId, timeStamp, detectedValues })
-
-        console.log(sendToSlack)
-
-        await this.sendAnnomaliesToSlack(sendToSlack)
+        await this.sendAnnomaliesToSlack(payload)
 
       }
 
@@ -139,22 +149,25 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds) {
 
 
 
-module.exports.sendAnnomaliesToSlack = async function (detectedAnnomalies) {
+module.exports.sendAnnomaliesToSlack = async function (payload) {
 
   try {
 
 
-    const uri = `https://hooks.slack.com/services/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`
+
+    const uri = `https://hooks.slack.com/services/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`
 
     const requestHeaders = {
       'Content-Type': 'application/json'
     }
     const res = await axios(uri, {
       method: 'POST',
-      text: detectedAnnomalies,
-      headers: requestHeaders
+      headers: requestHeaders,
+      data: JSON.stringify(payload)
+      
+   
     });
-    const data = await res.json();
+    const data = await res
     console.log(data)
   }
 
