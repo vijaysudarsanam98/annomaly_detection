@@ -45,96 +45,110 @@ module.exports.getQuestionIds = async function (sessionId) {
   });
 
   const collectionArray = await res.json()
+  console.log(collectionArray)
+  let questionName = []
   let questionId = []
 
   for (const member of collectionArray.data) {
     questionId.push(member.id)
   }
+  for (const member of collectionArray.data) {
+    questionName.push(member.name)
+  }
 
 
-  return questionId
+
+  return {
+    questionId,
+    questionName
+  }
 }
 
-module.exports.collectAnnomalies = async function (sessionId, questionIds) {
+module.exports.collectAnnomalies = async function (sessionId, questionIds, questionNames) {
 
   try {
 
     let annomaliDetectedValues = []
     // eslint-disable-next-line no-unused-vars
     let currentQuestionId
+    let currentQuestionName
 
 
-
-
-    for (const questionId of questionIds) {
-      const uri = `https://analytics.tryinteract.io/api/card/${questionId}/query/json`
-      // console.log(questions) 
-
-
-
-
-
-      const requestHeaders = {
-        'X-Metabase-Session': sessionId,
-        'Content-Type': 'application/json'
-      }
-      const res = await fetch(uri, {
-        method: 'POST',
-        headers: requestHeaders
-      });
-      const data = await res.json()
-      var azureAnomaliesRequest = {
-        series: data,
-        granularity: KnownTimeGranularity.daily
-      };
-
-
-      let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
-      let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
-      if (isAnomalyDetected) {
-        detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
-
-          if (changePoint === true) {
-            annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index] })
-
-          }
+    for (const questionName of questionNames) {
+      for (const questionId of questionIds) {
+        const uri = `https://analytics.tryinteract.io/api/card/${questionId}/query/json`
+        // console.log(questions) 
+  
+  
+  
+  
+  
+        const requestHeaders = {
+          'X-Metabase-Session': sessionId,
+          'Content-Type': 'application/json'
+        }
+        const res = await fetch(uri, {
+          method: 'POST',
+          headers: requestHeaders
         });
+        const data = await res.json()
+        var azureAnomaliesRequest = {
+          series: data,
+          granularity: KnownTimeGranularity.daily
+        };
+  
+  
+        let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
+        let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
+        if (isAnomalyDetected) {
+          detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
+  
+            if (changePoint === true) {
+              annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index],currentQuestionName:questionName })
+  
+            }
+          });
+        }
+  
+        var filteredArray = annomaliDetectedValues.filter(function (obj) {
+          return obj.currentQuestionId === questionId
+        })
+  
+  
+        let lastTwoValues = filteredArray.slice(-2)
+  
+        for (let values of lastTwoValues) {
+  
+  
+          let questionId = values.currentQuestionId
+          let timeStamp = values.index.timestamp
+          let detectedValues = values.index.value
+          let questionName=values.currentQuestionName
+  
+  
+  
+  
+  
+  
+          let payload = {
+  
+            "channel": "#tryinteract",
+            "username": "webhookbot",
+            "text": ` Annomaly detected on question :${questionName}\n , by  :${timeStamp}\n where we had ${detectedValues}`
+  
+          }
+  
+  
+  
+        //  await this.sendAnnomaliesToSlack(payload)
+  
+        }
+  
       }
-
-      var filteredArray = annomaliDetectedValues.filter(function (obj) {
-        return obj.currentQuestionId === questionId
-      })
-
-
-      let lastTwoValues = filteredArray.slice(-2)
-
-      for (let values of lastTwoValues) {
-        
-       
-        let questionId = values.currentQuestionId
-        let timeStamp = values.index.timestamp
-        let detectedValues = values.index.value
-           
-       
-        
-
-
-             
-   let  payload=  {
-
-    "channel": "#tryinteract", 
-    "username": "webhookbot", 
-    "text":     ` Annomaly detected on questionId ${ questionId}\n , by  :${timeStamp}\n we had ${detectedValues}`
 
     }
 
-
-
-        await this.sendAnnomaliesToSlack(payload)
-
-      }
-
-    }
+    
 
   }
 
@@ -155,7 +169,7 @@ module.exports.sendAnnomaliesToSlack = async function (payload) {
 
 
 
-    const uri = `https://hooks.slack.com/services/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`
+    const uri = `https://hooks.slack.com/services/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`
 
     const requestHeaders = {
       'Content-Type': 'application/json'
@@ -164,8 +178,8 @@ module.exports.sendAnnomaliesToSlack = async function (payload) {
       method: 'POST',
       headers: requestHeaders,
       data: JSON.stringify(payload)
-      
-   
+
+
     });
     const data = await res
     console.log(data)
