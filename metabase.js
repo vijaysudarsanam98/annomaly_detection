@@ -13,6 +13,7 @@ require('chromedriver')
 const chrome = require('selenium-webdriver/chrome')
 const g = require('get')
 let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiveServiceEndPoint, new AzureKeyCredential(config.config.azureCognitiveServiceApiKey));
+const fs = require('fs')
 
 
 
@@ -82,11 +83,11 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds, quest
       for (const questionId of questionIds) {
         const uri = `https://analytics.tryinteract.io/api/card/${questionId}/query/json`
         // console.log(questions) 
-  
-  
-  
-  
-  
+
+
+
+
+
         const requestHeaders = {
           'X-Metabase-Session': sessionId,
           'Content-Type': 'application/json'
@@ -100,59 +101,59 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds, quest
           series: data,
           granularity: KnownTimeGranularity.daily
         };
-  
-  
+
+
         let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
         let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
         if (isAnomalyDetected) {
           detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
-  
+
             if (changePoint === true) {
-              annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index],currentQuestionName:questionName })
-  
+              annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index], currentQuestionName: questionName })
+
             }
           });
         }
-  
+
         var filteredArray = annomaliDetectedValues.filter(function (obj) {
           return obj.currentQuestionId === questionId
         })
-  
-  
+
+
         let lastTwoValues = filteredArray.slice(-2)
-  
+
         for (let values of lastTwoValues) {
-  
-  
+
+
           let questionId = values.currentQuestionId
           let timeStamp = values.index.timestamp
           let detectedValues = values.index.value
-          let questionName=values.currentQuestionName
-  
-  
-  
-  
-  
-  
+          let questionName = values.currentQuestionName
+
+
+
+
+
+
           let payload = {
-  
+
             "channel": "#tryinteract",
             "username": "webhookbot",
             "text": ` Annomaly detected on question :${questionName}\n , by  :${timeStamp}\n where we had ${detectedValues}`
-  
+
           }
-  
-  
-  
-        //  await this.sendAnnomaliesToSlack(payload)
-  
+
+
+
+          //  await this.sendAnnomaliesToSlack(payload)
+
         }
-  
+
       }
 
     }
 
-    
+
 
   }
 
@@ -167,40 +168,50 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds, quest
 
 
 
-module.exports.takescreenshots = async function (){
-  
+module.exports.takescreenshots = async function (questionIds) {
+
   const driver = new webdriver.Builder().forBrowser('chrome').build()
-  driver.manage().window().maximize() 
-try {
-   
-   const url = 'https://analytics.tryinteract.io/question/363/'
+  driver.manage().window().maximize()
+  try {
+
+    for (const questions of questionIds) {
+      const url = `https://analytics.tryinteract.io/question/${questions}/`
 
 
-   await driver.get(url)
-   await driver.findElement(By.xpath("//input[@placeholder='nicetoseeyou@email.com']")).sendKeys('vijaysudarsanam78@gmail.com')
-   await driver.sleep(3000)
+      await driver.get(url)
+      await driver.findElement(By.xpath("//input[@placeholder='nicetoseeyou@email.com']")).sendKeys('vijaysudarsanam78@gmail.com')
+      await driver.sleep(3000)
 
-   const password = 'farming002*'
+      const password = 'farming002*'
 
-   await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(password)
-   await driver.sleep(3000)
+      await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(password)
+      await driver.sleep(3000)
 
-   await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(Key.ENTER)
-   await driver.sleep(10000)
-   
-   driver.takeScreenshot().then(
-    function(image, err) {
-        require('fs').writeFile('363.png', image, 'base64', function(err) {
-            console.log(err);
-        });
+      await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(Key.ENTER)
+      await driver.sleep(10000)
+
+      let screenShot = await driver.takeScreenshot()
+      // let saveScreenshot=await screenSHot
+      let writeFile = await fs.writeFileSync(`${questions}.png`, screenShot, 'base64')
+      console.log(writeFile)
+
     }
-);
   }
-  
- catch(err){
-  console.log(err)
- }
+
+
+
+
+
+
+  catch (err) {
+    console.log(err)
+  }
+  finally {
+    await driver.quit()
+  }
 }
+
+
 module.exports.sendAnnomaliesToSlack = async function (payload) {
 
   try {
