@@ -7,7 +7,11 @@ const { AnomalyDetectorClient, KnownTimeGranularity } = require('@azure/ai-anoma
 const { AzureKeyCredential } = require('@azure/core-auth');
 const { json } = require('express');
 const axios = require('axios').default;
-
+const webdriver = require('selenium-webdriver')
+const { By, Key } = require('selenium-webdriver')
+require('chromedriver')
+const chrome = require('selenium-webdriver/chrome')
+const g = require('get')
 let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiveServiceEndPoint, new AzureKeyCredential(config.config.azureCognitiveServiceApiKey));
 
 
@@ -163,6 +167,40 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds, quest
 
 
 
+module.exports.takescreenshots = async function (){
+  
+  const driver = new webdriver.Builder().forBrowser('chrome').build()
+  driver.manage().window().maximize() 
+try {
+   
+   const url = 'https://analytics.tryinteract.io/question/363/'
+
+
+   await driver.get(url)
+   await driver.findElement(By.xpath("//input[@placeholder='nicetoseeyou@email.com']")).sendKeys('vijaysudarsanam78@gmail.com')
+   await driver.sleep(3000)
+
+   const password = 'farming002*'
+
+   await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(password)
+   await driver.sleep(3000)
+
+   await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(Key.ENTER)
+   await driver.sleep(10000)
+   
+   driver.takeScreenshot().then(
+    function(image, err) {
+        require('fs').writeFile('363.png', image, 'base64', function(err) {
+            console.log(err);
+        });
+    }
+);
+  }
+  
+ catch(err){
+  console.log(err)
+ }
+}
 module.exports.sendAnnomaliesToSlack = async function (payload) {
 
   try {

@@ -7,6 +7,7 @@
 
 var util = require('util'),
     AWS = require('aws-sdk'),
+    s3Stream = require('s3-upload-stream'),
     amazon = require('../../client'),
     _ = require('lodash');
 
@@ -17,6 +18,9 @@ var Client = exports.Client = function (options) {
   _.extend(this, require('./files'));
 
   this.s3 = new AWS.S3(this._awsConfig);
+
+  // configure the s3Stream
+  this.s3Stream = s3Stream(this.s3);
 };
 
 util.inherits(Client, amazon.Client);

@@ -6,8 +6,8 @@ let config = {
     anomalyDetectionAccountName: 'prodtianomalydetector',
     collectionId: 46,
     azureCognitiveServiceApiKey: '31d480d8330a48b79b37f824898e2159',
-    azureCognitiveServiceEndPoint: 'https://prod-ti-anomaly-detector-api.cognitiveservices.azure.com/'
-
+    azureCognitiveServiceEndPoint: 'https://prod-ti-anomaly-detector-api.cognitiveservices.azure.com/',
+    baseurl:'https://analytics.tryinteract.io/'
 
 }
 

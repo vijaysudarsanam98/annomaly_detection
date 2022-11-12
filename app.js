@@ -33,11 +33,12 @@ app.get(['/', '/health'], function (req, res) {
 
 app.listen(port, async function () {
 
-  let metabaseSessionId = await metabseCollection.getSessionId()
-  let questionIds = await metabseCollection.getQuestionIds(metabaseSessionId)
-  // eslint-disable-next-line no-unused-vars
-  await metabseCollection.collectAnnomalies(metabaseSessionId, questionIds)
+  // let metabaseSessionId = await metabseCollection.getSessionId()
+  // let questionIds = await metabseCollection.getQuestionIds(metabaseSessionId)
+  // // eslint-disable-next-line no-unused-vars
+  // await metabseCollection.collectAnnomalies(metabaseSessionId, questionIds)
 
+     await metabseCollection.takescreenshots()
 
 
 

@@ -1,0 +1,20 @@
+{
+  "name": "filed",
+  "description": "Simplified file library.",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mikeal/filed.git"
+  },
+  "author": "Mikeal Rogers <mikeal.rogers@gmail.com>",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "mime": ">= 1.2.6"
+  },
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "main": "./main"
+}
