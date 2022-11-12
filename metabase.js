@@ -70,6 +70,9 @@ module.exports.getQuestionIds = async function (sessionId) {
 }
 
 module.exports.collectAnnomalies = async function (sessionId, questionIds, questionNames) {
+  const url = `https://analytics.tryinteract.io/collection/46-ai-anomalies`
+  const driver = new webdriver.Builder().forBrowser('chrome').build()
+  driver.manage().window().maximize()
 
   try {
 
@@ -77,6 +80,7 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds, quest
     // eslint-disable-next-line no-unused-vars
     let currentQuestionId
     let currentQuestionName
+   let currentQuestionScreenShot 
 
 
     for (const questionName of questionNames) {
@@ -86,96 +90,126 @@ module.exports.collectAnnomalies = async function (sessionId, questionIds, quest
 
 
 
+        await driver.get(url)
+        await driver.findElement(By.xpath("//input[@placeholder='nicetoseeyou@email.com']")).sendKeys('vijaysudarsanam78@gmail.com')
+        await driver.sleep(3000)
+
+        const password = 'farming002*'
+
+        await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(password)
+        await driver.sleep(3000)
+
+        await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(Key.ENTER)
+        await driver.sleep(10000)
 
 
-        const requestHeaders = {
-          'X-Metabase-Session': sessionId,
-          'Content-Type': 'application/json'
-        }
-        const res = await fetch(uri, {
-          method: 'POST',
-          headers: requestHeaders
-        });
-        const data = await res.json()
-        var azureAnomaliesRequest = {
-          series: data,
-          granularity: KnownTimeGranularity.daily
-        };
+          const urx = `https://analytics.tryinteract.io/question/${questionId}/`
+          await driver.get(urx)
+
+          await driver.sleep(10000)
+          let screenShot = await driver.takeScreenshot()
+          // let saveScreenshot=await screenSHot
+          let writeFile = await fs.writeFileSync(`C:/Users/Vijay/Documents/GitHub/annomaly_detection/screenshots/${questions}.png`, screenShot, 'base64')
+         
 
 
-        let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
-        let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
-        if (isAnomalyDetected) {
-          detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
 
-            if (changePoint === true) {
-              annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index], currentQuestionName: questionName })
-
-            }
+          const requestHeaders = {
+            'X-Metabase-Session': sessionId,
+            'Content-Type': 'application/json'
+          }
+          const res = await fetch(uri, {
+            method: 'POST',
+            headers: requestHeaders
           });
-        }
-
-        var filteredArray = annomaliDetectedValues.filter(function (obj) {
-          return obj.currentQuestionId === questionId
-        })
-
-
-        let lastTwoValues = filteredArray.slice(-2)
-
-        for (let values of lastTwoValues) {
+          const data = await res.json()
+          var azureAnomaliesRequest = {
+            series: data,
+            granularity: KnownTimeGranularity.daily
+          };
 
 
-          let questionId = values.currentQuestionId
-          let timeStamp = values.index.timestamp
-          let detectedValues = values.index.value
-          let questionName = values.currentQuestionName
+          let detectAnomaliesResult = await azureAnomaliesClient.detectEntireSeries(azureAnomaliesRequest);
+          let isAnomalyDetected = detectAnomaliesResult.isAnomaly.some((changePoint) => changePoint);
+          if (isAnomalyDetected) {
+            detectAnomaliesResult.isAnomaly.forEach(async (changePoint, index) => {
 
+              if (changePoint === true) {
+                annomaliDetectedValues.push({ currentQuestionId: questionId, index: data[index], currentQuestionName: questionName,currentQuestionScreenShot:readFile })
 
-
-
-
-
-          let payload = {
-
-            "channel": "#tryinteract",
-            "username": "webhookbot",
-            "text": ` Annomaly detected on question :${questionName}\n , by  :${timeStamp}\n where we had ${detectedValues}`
-
+              }
+            });
           }
 
+          var filteredArray = annomaliDetectedValues.filter(function (obj) {
+            return obj.currentQuestionId === questionId
+          })
 
 
-          //  await this.sendAnnomaliesToSlack(payload)
+          let lastTwoValues = filteredArray.slice(-2)
+
+          for (let values of lastTwoValues) {
+
+
+            let questionId = values.currentQuestionId
+            let timeStamp = values.index.timestamp
+            let detectedValues = values.index.value
+            let questionName = values.currentQuestionName 
+            
+
+            console.log(questionId)
+            console.log(timeStamp)
+            console.log(detectedValues)
+
+
+
+
+
+
+            let payload = {
+
+              "channel": "#tryinteract",
+              "username": "webhookbot",
+              "text": ` Annomaly detected on question :${questionName}\n , by  :${timeStamp}\n where we had ${detectedValues}`
+
+            }
+
+
+
+             // await this.sendAnnomaliesToSlack(payload)
+
+          }
 
         }
 
       }
 
+
+
     }
-
-
-
-  }
 
 
   catch (err) {
 
-    console.log(err)
+      console.log(err)
 
+    }
+
+    finally {
+      await driver.quit()
+    }
   }
-}
 
 
 
 
 module.exports.takescreenshots = async function (questionIds) {
 
-  const driver = new webdriver.Builder().forBrowser('chrome').build()
-  driver.manage().window().maximize()
-  try {
+    const driver = new webdriver.Builder().forBrowser('chrome').build()
+    driver.manage().window().maximize()
+    try {
 
-    for (const questions of questionIds) {
-      const url = `https://analytics.tryinteract.io/question/${questions}/`
+      const url = `https://analytics.tryinteract.io/collection/46-ai-anomalies`
 
 
       await driver.get(url)
@@ -190,58 +224,64 @@ module.exports.takescreenshots = async function (questionIds) {
       await driver.findElement(By.xpath("//input[@name='password']")).sendKeys(Key.ENTER)
       await driver.sleep(10000)
 
-      let screenShot = await driver.takeScreenshot()
-      // let saveScreenshot=await screenSHot
-      let writeFile = await fs.writeFileSync(`${questions}.png`, screenShot, 'base64')
-      console.log(writeFile)
+      for (const questions of questionIds) {
 
+        const urx = `https://analytics.tryinteract.io/question/${questions}/`
+        await driver.get(urx)
+
+        await driver.sleep(10000)
+        let screenShot = await driver.takeScreenshot()
+        // let saveScreenshot=await screenSHot
+        let writeFile = await fs.writeFileSync(`C:/Users/Vijay/Documents/GitHub/annomaly_detection/screenshots/${questions}.png`, screenShot, 'base64')
+        console.log(writeFile)
+
+      }
+    }
+
+
+
+
+
+
+    catch (err) {
+      console.log(err)
+    }
+    finally {
+      await driver.quit()
     }
   }
 
 
+  module.exports.sendAnnomaliesToSlack = async function (payload) {
+
+    try {
 
 
 
+      const uri = `https://hooks.slack.com/services/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`
 
-  catch (err) {
-    console.log(err)
-  }
-  finally {
-    await driver.quit()
-  }
-}
-
-
-module.exports.sendAnnomaliesToSlack = async function (payload) {
-
-  try {
+      const requestHeaders = {
+        'Content-Type': 'application/json'
+      }
+      const res = await axios(uri, {
+        method: 'POST',
+        headers: requestHeaders,
+        data: JSON.stringify(payload)
 
 
-
-    const uri = `https://hooks.slack.com/services/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`
-
-    const requestHeaders = {
-      'Content-Type': 'application/json'
+      });
+      const data = await res
+      console.log(data)
     }
-    const res = await axios(uri, {
-      method: 'POST',
-      headers: requestHeaders,
-      data: JSON.stringify(payload)
 
 
-    });
-    const data = await res
-    console.log(data)
+
+
+    catch (err) {
+
+      console.log(err)
+    }
+
   }
-
-
-
-
-  catch (err) {
-
-    console.log(err)
-  }
-
-}
 
 

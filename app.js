@@ -36,9 +36,9 @@ app.listen(port, async function () {
    let metabaseSessionId = await metabseCollection.getSessionId()
    let {questionId,questionName} = await metabseCollection.getQuestionIds(metabaseSessionId)
   // // eslint-disable-next-line no-unused-vars
-  // await metabseCollection.collectAnnomalies(metabaseSessionId, questionIds)
+   await metabseCollection.collectAnnomalies(metabaseSessionId, questionId,questionName)
 
-     await metabseCollection.takescreenshots(questionId)
+  //   await metabseCollection.takescreenshots(questionId)
 
 
 
