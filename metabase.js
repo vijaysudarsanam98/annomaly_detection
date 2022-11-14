@@ -14,6 +14,13 @@ const chrome = require('selenium-webdriver/chrome')
 const g = require('get')
 let azureAnomaliesClient = new AnomalyDetectorClient(config.config.azureCognitiveServiceEndPoint, new AzureKeyCredential(config.config.azureCognitiveServiceApiKey));
 const fs = require('fs')
+const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
+const width = 500; //px
+const height = 500; //px
+const backgroundColour = 'white'; // Uses https://www.w3schools.com/tags/canvas_fillstyle.asp
+const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, backgroundColour });
+
+
 
 
 
@@ -285,3 +292,89 @@ module.exports.takescreenshots = async function (questionIds) {
   }
 
 
+module.exports.generateGraph=async function(sessionId){ 
+
+  
+
+  const url = `https://analytics.tryinteract.io/api/card/363/query/json`
+
+ 
+
+try{ 
+
+  const requestHeaders = {
+    'X-Metabase-Session': sessionId,
+    'Content-Type': 'application/json'
+  }
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: requestHeaders
+  });
+
+  const collectionArray = await res.json()
+
+  for (const items of collectionArray){
+   let timeStamp=items.timestamp
+   let  values=items.value
+    const configuration = {
+      type: 'line',   // for line chart
+      data: {
+          labels: [timeStamp],
+          datasets: [{
+              label: "Sample 1",
+              data: [values],
+              fill: false,
+              borderColor: ['rgb(51, 204, 204)'],
+              borderWidth: 1,
+              xAxisID: 'xAxis1' //define top or bottom axis ,modifies on scale
+          }
+          
+          ],
+  
+      },
+      options: {
+          scales: {
+              y: {
+                  suggestedMin: 0
+              },
+              x:{
+
+                suggestedMin: 100
+
+              }
+          }
+      }
+  } 
+
+    const dataUrl = await chartJSNodeCanvas.renderToDataURL(configuration);
+    const base64Image = dataUrl
+
+    var base64Data = base64Image.replace(/^data:image\/png;base64,/, "");
+
+
+    fs.writeFile("graph.png", base64Data, 'base64', function (err) {
+        if (err) {
+            console.log(err);
+        }
+    });
+    return dataUrl
+
+  }
+
+ 
+
+} 
+
+catch(err){
+
+  console.log(err)
+
+
+}
+
+
+    
+}
+
+
+                
