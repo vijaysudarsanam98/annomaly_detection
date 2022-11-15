@@ -314,15 +314,14 @@ try{
   const collectionArray = await res.json()
 
   for (const items of collectionArray){
-   let timeStamp=items.timestamp
-   let  values=items.value
+   
     const configuration = {
       type: 'line',   // for line chart
       data: {
-          labels: [timeStamp],
+          labels: items.timestamp,
           datasets: [{
               label: "Sample 1",
-              data: [values],
+              data: items.values,
               fill: false,
               borderColor: ['rgb(51, 204, 204)'],
               borderWidth: 1,
@@ -344,7 +343,9 @@ try{
               }
           }
       }
-  } 
+  }  
+
+  console.log(configuration)
 
     const dataUrl = await chartJSNodeCanvas.renderToDataURL(configuration);
     const base64Image = dataUrl
@@ -357,7 +358,6 @@ try{
             console.log(err);
         }
     });
-    return dataUrl
 
   }
 
